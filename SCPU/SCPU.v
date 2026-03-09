@@ -66,7 +66,12 @@ wire [31:0] id_immout;
 //	------- EX阶段 -------
 wire [31:0] ex_AluResult;
 wire 		ex_Zero;
+wire [31:0]	ex_A;
 wire [31:0] ex_B;
+wire [31:0]	ex_alumux_res;
+
+wire [1:0]	ex_ForwardA;
+wire [1:0]	ex_ForwardB;
 
 //	------- MEM阶段 ------
 wire		mem_branch;
@@ -100,6 +105,9 @@ reg [1:0]		id_ex_WDSel;
 reg [2:0]		id_ex_DMType;
 reg [4:0]		id_ex_rd;
 reg [2:0]		id_ex_NPCOp;
+
+reg [4:0]		id_ex_rs1;
+reg [4:0]		id_ex_rs2;
 
 
 
@@ -274,6 +282,9 @@ always @(posedge clk ) begin
 		id_ex_rd		<= 5'd0;
 		id_ex_NPCOp		<= `NPC_PLUS4;
 
+		id_ex_rs1		<= 5'b0;
+		id_ex_rs2		<= 5'b0;
+
 	end
 	else if (pipe2_allowin) begin
 		pipe2_valid <= pipe1_to_pipe2_valid;
@@ -294,6 +305,9 @@ always @(posedge clk ) begin
 		id_ex_rd		<= id_rd;
 		id_ex_NPCOp		<= id_NPCOp;
 
+		id_ex_rs1		<= id_rs1;
+		id_ex_rs2		<= id_rs2;
+
 		end
 
 	end
@@ -303,22 +317,53 @@ end
 
 //	------- EX阶段 -------
 
-// 1.ALUSrc
+// 1.ALUSrc 确定了是RD2还是immout
 alumux U_ALUMUX(
 	.A(id_ex_RD2),
 	.B(id_ex_immout),
 	.ALUSrc(id_ex_ALUSrc),
-	.MuxResult(ex_B)
+	.MuxResult(ex_alumux_res)
 );
 
-// 2.ALU
-alu U_ALU(
+//	2.ForwardA_mux
+forwardingmux U_Forwarding_A_MUX(
 	.A(id_ex_RD1),
+	.B(ex_mem_AluResult),
+	.C(wb_WD),
+	.sel(ex_ForwardA),
+	.muxres(ex_A)
+);
+
+//	3.ForwardB_mux
+forwardingmux U_Forwarding_B_MUX(
+	.A(ex_alumux_res),
+	.B(ex_mem_AluResult),
+	.C(wb_WD),
+	.sel(ex_ForwardB),
+	.muxres(ex_B)
+);
+
+// 4.ALU
+alu U_ALU(
+	.A(ex_A),
 	.B(ex_B),
 	.ALUOp(id_ex_ALUOp),
 	.PC(id_ex_PC),
 	.C(ex_AluResult),
 	.Zero(ex_Zero)
+);
+
+//	5.Forwarding Unit
+forwarding U_Forwarding(
+	.ex_mem_RFWr(ex_mem_RFWr),
+	.ex_mem_rd(ex_mem_rd),
+	.id_ex_rs1(id_ex_rs1),
+	.id_ex_rs2(id_ex_rs2),
+	
+	.mem_wb_RFWr(mem_wb_RFWr),
+	.mem_wb_rd(mem_wb_rd),
+	.ex_ForwardA(ex_ForwardA),
+	.ex_ForwardB(ex_ForwardB)
 );
 
 
