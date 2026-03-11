@@ -3,7 +3,7 @@
 module ctrl(Op, Funct7, Funct3, 
             RegWrite, MemWrite,
             EXTOp, ALUOp, NPCOp, 
-            ALUSrc, WDSel,DMType
+            ALUSrc, WDSel,DMType,MemRead
             );
             
    input  [6:0] Op;       // opcode
@@ -19,6 +19,7 @@ module ctrl(Op, Funct7, Funct3,
    output       ALUSrc;   // ALU source for A
 	 output [2:0] DMType;
    output [1:0] WDSel;    // (register) write data selection
+   output       MemRead;
    
   // r format
     wire rtype  = ~Op[6]&Op[5]&Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0]; //0110011
@@ -54,6 +55,7 @@ module ctrl(Op, Funct7, Funct3,
   assign RegWrite   = rtype | itype_r | i_jalr | i_jal | itype_l; // register write
   assign MemWrite   = stype;                           // memory write
   assign ALUSrc     = itype_r | stype | i_jal | i_jalr;   // ALU B is from instruction immediate
+  assign MemRead    = itype_l; // load型指令读取dm
 
   // signed extension
   // EXT_CTRL_ITYPE_SHAMT 6'b100000
@@ -64,7 +66,7 @@ module ctrl(Op, Funct7, Funct3,
   // EXT_CTRL_JTYPE	      6'b000001
   assign EXTOp[5] = 0;
   //assign EXTOp[4]    =  i_ori | i_andi | i_jalr;
-  assign EXTOp[4]    =  i_ori;  
+  assign EXTOp[4]    =  i_ori | i_addi;  
   assign EXTOp[3]    = stype; 
   assign EXTOp[2]    = sbtype; 
   assign EXTOp[1]    = 0;   

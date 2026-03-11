@@ -9,6 +9,13 @@ module dm(clk, DMWr, addr, din, dout);
      
    reg [31:0] dmem[127:0];
    
+   integer i;
+   initial begin
+      for (i = 0; i < 128; i = i + 1)
+         dmem[i] = 32'b0;
+   end
+
+
    always @(posedge clk)
       if (DMWr) begin
          dmem[addr[8:2]] <= din;

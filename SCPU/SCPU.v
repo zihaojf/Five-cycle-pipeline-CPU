@@ -28,6 +28,8 @@ reg [31:0]		if_pc;
 assign PC_out = if_pc;
 wire [31:0]		npc;   
 
+wire			pc_write;
+
 //	------ID阶段------
 
 //	decode
@@ -53,6 +55,7 @@ wire		id_ALUSrc;
 wire [2:0]	id_DMType;
 wire [1:0]	id_WDSel;
 wire [2:0]	id_NPCOp;
+wire		id_MemRead;
 
 // RF
 wire [31:0] id_RD1;
@@ -108,6 +111,7 @@ reg [2:0]		id_ex_NPCOp;
 
 reg [4:0]		id_ex_rs1;
 reg [4:0]		id_ex_rs2;
+reg 			id_ex_MemRead;
 
 
 
@@ -138,6 +142,14 @@ reg [2:0]		mem_wb_DMType;
 
 
 
+//	------- stall/flush变量 -------
+wire		if_id_stall;
+wire		id_ex_stall;
+wire		ex_mem_stall;
+
+wire		if_id_flush;
+wire		id_ex_flush;
+
 
 
 
@@ -147,6 +159,7 @@ PC U_PC(
 	.clk(clk),
 	.rst(rst),
 	.NPC(npc),
+	.en(pc_write),
 	.PC(if_pc)
 );
 
@@ -160,7 +173,7 @@ wire	pipe1_to_pipe2_valid;
 wire    validin;
 assign validin = 1'b1;//先默认都有效
 
-assign pipe1_ready_go = 1'b1; //此处恒设定为1，在具体实现中可根据条件修改
+assign pipe1_ready_go = !if_id_stall;  // load_use hazard
 assign pipe1_allowin = !pipe1_valid || pipe1_ready_go && pipe2_allowin; // 优先级 ! > && > ||
 assign pipe1_to_pipe2_valid = pipe1_valid && pipe1_ready_go;
 
@@ -219,7 +232,8 @@ ctrl U_CTRL(
 	.NPCOp(id_NPCOp),
 	.ALUSrc(id_ALUSrc),
 	.DMType(id_DMType),
-	.WDSel(id_WDSel)
+	.WDSel(id_WDSel),
+	.MemRead(id_MemRead)
 );
 
 // 3.RF
@@ -249,6 +263,17 @@ EXT U_EXT(
 	.immout(id_immout)
 );
 
+//	5.hazard_detection_unit
+hazard_detection_unit U_Hdu(
+	.id_ex_MemRead(id_ex_MemRead),
+	.id_ex_rd(id_ex_rd),
+	.id_rs1(id_rs1),
+	.id_rs2(id_rs2),
+	.pc_write(pc_write),
+	.if_id_stall(if_id_stall),
+	.id_ex_flush(id_ex_flush)
+);
+
 
 
 // ------- ID/EX阶段(pipe 2) -------
@@ -258,12 +283,12 @@ wire 	pipe2_allowin;
 wire	pipe2_ready_go;
 wire	pipe2_to_pipe3_valid;
 
-assign pipe2_ready_go = 1'b1; //此处恒设定为1，在具体实现中可根据条件修改
+assign pipe2_ready_go = 1'b1; 
 assign pipe2_allowin = !pipe2_valid || pipe2_ready_go && pipe3_allowin; // 优先级 ! > && > ||
 assign pipe2_to_pipe3_valid = pipe2_valid && pipe2_ready_go;
 
 always @(posedge clk ) begin
-	if (rst) begin
+	if (rst || id_ex_flush) begin
 		pipe2_valid <= 1'b0;
 
 		// 数据重置
@@ -284,6 +309,7 @@ always @(posedge clk ) begin
 
 		id_ex_rs1		<= 5'b0;
 		id_ex_rs2		<= 5'b0;
+		id_ex_MemRead	<= 1'b0;
 
 	end
 	else if (pipe2_allowin) begin
@@ -307,6 +333,7 @@ always @(posedge clk ) begin
 
 		id_ex_rs1		<= id_rs1;
 		id_ex_rs2		<= id_rs2;
+		id_ex_MemRead	<= id_MemRead;
 
 		end
 
