@@ -64,6 +64,10 @@ wire [31:0] id_RD2;
 // EXT
 wire [31:0] id_immout;
 
+//	loaduse冒险检测
+wire		id_loaduse_stall;
+wire		id_loaduse_flush;
+
 
 
 //	------- EX阶段 -------
@@ -150,6 +154,8 @@ wire		ex_mem_stall;
 wire		if_id_flush;
 wire		id_ex_flush;
 
+assign 		if_id_stall = id_loaduse_stall;
+assign 		id_ex_flush = id_loaduse_flush;
 
 
 
@@ -270,8 +276,8 @@ hazard_detection_unit U_Hdu(
 	.id_rs1(id_rs1),
 	.id_rs2(id_rs2),
 	.pc_write(pc_write),
-	.if_id_stall(if_id_stall),
-	.id_ex_flush(id_ex_flush)
+	.if_id_stall(id_loaduse_stall),
+	.id_ex_flush(id_loaduse_flush)
 );
 
 
@@ -459,7 +465,8 @@ NPC U_NPC(
 	.aluout(ex_mem_AluResult),
 	.Zero(ex_mem_Zero),
 	.NPC(mem_npc),
-	.if_PC(if_pc)
+	.if_PC(if_pc),
+	.branch(mem_branch)
 );
 
 assign npc = pipe3_valid ? mem_npc : (if_pc + 32'd4);
