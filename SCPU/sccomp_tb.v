@@ -64,7 +64,7 @@ module sccomp_tb();
           $display("instr: %h", U_SCCOMP.instr);
           $display("if_id_pc: %h", U_SCCOMP.U_SCPU.if_id_pc);
           $display("if_id_instr: %h", U_SCCOMP.U_SCPU.if_id_instr);
-          $display("next_pc: %h", U_SCCOMP.U_SCPU.mem_npc);
+          $display("next_pc: %h", U_SCCOMP.U_SCPU.ex_npc);
           $fclose(foutput);
           $finish;
         end

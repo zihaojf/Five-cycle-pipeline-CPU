@@ -80,9 +80,11 @@ wire [31:0]	ex_alumux_res;
 wire [1:0]	ex_ForwardA;
 wire [1:0]	ex_ForwardB;
 
+wire		ex_branch;
+wire [31:0]	ex_npc;
+
 //	------- MEM阶段 ------
-wire		mem_branch;
-wire [31:0]	mem_npc;
+
 
 //	------- WB阶段 -------
 wire [31:0]	wb_WD;
@@ -153,9 +155,12 @@ wire		ex_mem_stall;
 
 wire		if_id_flush;
 wire		id_ex_flush;
+wire		ex_mem_flush;
 
 assign 		if_id_stall = id_loaduse_stall;
-assign 		id_ex_flush = id_loaduse_flush;
+
+assign 		if_id_flush = ex_branch;
+assign 		id_ex_flush = id_loaduse_flush | ex_branch;
 
 
 
@@ -184,7 +189,7 @@ assign pipe1_allowin = !pipe1_valid || pipe1_ready_go && pipe2_allowin; // 优�
 assign pipe1_to_pipe2_valid = pipe1_valid && pipe1_ready_go;
 
 always @(posedge clk ) begin
-	if (rst) begin
+	if (rst | if_id_flush) begin
 		pipe1_valid <= 1'b0;
 
 		// 数据重置
@@ -399,6 +404,20 @@ forwarding U_Forwarding(
 	.ex_ForwardB(ex_ForwardB)
 );
 
+// 6.npc 
+NPC U_NPC(
+	.PC(id_ex_PC),
+	.NPCOp(id_ex_NPCOp),
+	.IMM(id_ex_immout),
+	.aluout(ex_AluResult),
+	.Zero(ex_Zero),
+	.NPC(ex_npc),
+	.if_PC(if_pc),
+	.branch(ex_branch)
+);
+
+assign npc = pipe2_valid ? ex_npc : (if_pc + 32'd4);
+
 
 
 // ------ EX/MEM阶段(pipe 3) -------
@@ -411,7 +430,7 @@ assign pipe3_allowin = !pipe3_valid || pipe3_ready_go && pipe4_allowin; // 优�
 assign pipe3_to_pipe4_valid = pipe3_valid && pipe3_ready_go;
 
 always @(posedge clk ) begin
-	if (rst) begin
+	if (rst ) begin
 		pipe3_valid <= 1'b0;
 
 		//	数据重置
@@ -457,22 +476,8 @@ end
 
 // -------- MEM阶段 -------
 
-// 1.npc 
-NPC U_NPC(
-	.PC(ex_mem_PC),
-	.NPCOp(ex_mem_NPCOp),
-	.IMM(ex_mem_immout),
-	.aluout(ex_mem_AluResult),
-	.Zero(ex_mem_Zero),
-	.NPC(mem_npc),
-	.if_PC(if_pc),
-	.branch(mem_branch)
-);
 
-assign npc = pipe3_valid ? mem_npc : (if_pc + 32'd4);
-
-
-// 2.DM
+// 1.DM
 assign mem_w = ex_mem_MemWrite && pipe3_valid;
 assign Addr_out = ex_mem_AluResult;
 assign Data_out = ex_mem_WriteData;
