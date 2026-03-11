@@ -51,10 +51,28 @@ module ctrl(Op, Funct7, Funct3,
  // j format
    wire i_jal  = Op[6]& Op[5]&~Op[4]& Op[3]& Op[2]& Op[1]& Op[0];  // jal 1101111
 
-  // generate control signals
-  assign RegWrite   = rtype | itype_r | i_jalr | i_jal | itype_l; // register write
+  // lui 0110111
+  wire lui = ~Op[6] & Op[5] & Op[4] & ~Op[3] & Op[2] & Op[1] & Op[0];
+
+  // auipc 0010111
+  wire auipc = ~Op[6] & ~Op[5] & Op[4] & ~Op[3] & Op[2] & Op[1] & Op[0];
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // 产生控制信号
+  assign RegWrite   = rtype | itype_r | i_jalr | i_jal | itype_l | lui | auipc; // register write
   assign MemWrite   = stype;                           // memory write
-  assign ALUSrc     = itype_r | stype | i_jal | i_jalr;   // ALU B is from instruction immediate
+  assign ALUSrc     = itype_r | stype | i_jal | i_jalr | lui | auipc;   // ALU B is from instruction immediate
   assign MemRead    = itype_l; // load型指令读取dm
 
   // signed extension
@@ -69,7 +87,7 @@ module ctrl(Op, Funct7, Funct3,
   assign EXTOp[4]    =  i_ori | i_addi;  
   assign EXTOp[3]    = stype; 
   assign EXTOp[2]    = sbtype; 
-  assign EXTOp[1]    = 0;   
+  assign EXTOp[1]    = lui | auipc;   
   assign EXTOp[0]    = i_jal;         
 
 
@@ -93,8 +111,8 @@ module ctrl(Op, Funct7, Funct3,
   
 
  
-	assign ALUOp[0] = itype_l|stype|i_addi|i_ori|i_add|i_or;
-	assign ALUOp[1] = i_jalr|itype_l|stype|i_addi|i_add|i_and;
+	assign ALUOp[0] = itype_l|stype|i_addi|i_ori|i_add|i_or | lui;
+	assign ALUOp[1] = i_jalr|itype_l|stype|i_addi|i_add|i_and | auipc;
 	//assign ALUOp[2] = i_andi|i_and|i_ori|i_or|i_beq|i_sub;
 	//assign ALUOp[3] = i_andi|i_and|i_ori|i_or;
 	assign ALUOp[2] = i_and|i_ori|i_or|i_beq|i_sub;
