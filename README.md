@@ -61,6 +61,9 @@ or (ID/EX.RegisterRd = IF/ID.RegisterRs2))
 SRALI, SRAI}
 • I4={ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND}
 
+![](./SCPU/images/RV32I1.png)
+![](./SCPU/images/RV32I2.png)
+
 ### 5.1 LUI, AUIPC
 ![](./SCPU/images/lui_auipc.png)
 ```
@@ -72,6 +75,30 @@ AUIPC (add upper immediate to pc) is used to build pc-relative addresses and use
 AUIPC forms a 32-bit offset from the U-immediate, filling in the lowest 12 bits with zeros, adds this
 offset to the address of the AUIPC instruction, then places the result in register rd.
 ```
+### 5.2 JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU
+#### 5.2.1 JAL
+![](./SCPU/images/jal.png)
+```
+The jump and link (JAL) instruction uses the J-type format, where the J-immediate encodes a signed
+offset in multiples of 2 bytes. The offset is sign-extended and added to the address of the jump
+instruction to form the jump target address. Jumps can therefore target a ±1 MiB range. JAL stores the
+address of the instruction following the jump ('pc'+4) into register rd. The standard software calling
+convention uses 'x1' as the return address register and 'x5' as an alternate link register
+```
+
+#### 5.2.2 JALR
+![](./SCPU/images/jalr.png)
+```
+The indirect jump instruction JALR (jump and link register) uses the I-type encoding. The target
+address is obtained by adding the sign-extended 12-bit I-immediate to the register rs1, then setting the
+least-significant bit of the result to zero. The address of the instruction following the jump (pc+4) is
+written to register rd. Register x0 can be used as the destination if the result is not required.
+```
+
+#### 5.2.3 BEQ, BNE, BLT, BGE, BLTU, BGEU
+![](./SCPU/images/branch.png)
+
+
 
 
 

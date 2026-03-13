@@ -16,7 +16,7 @@ module ctrl(Op, Funct7, Funct3,
    output [5:0] EXTOp;    // control signal to signed extension
    output [4:0] ALUOp;    // ALU opertion
    output [2:0] NPCOp;    // next pc operation
-   output       ALUSrc;   // ALU source for A
+   output       ALUSrc;   // ALU source for B
 	 output [2:0] DMType;
    output [1:0] WDSel;    // (register) write data selection
    output       MemRead;
@@ -46,7 +46,12 @@ module ctrl(Op, Funct7, Funct3,
 
   // sb format
    wire sbtype  = Op[6]&Op[5]&~Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0];//1100011
-   wire i_beq  = sbtype& ~Funct3[2]& ~Funct3[1]&~Funct3[0]; // beq
+   wire i_beq  = sbtype& ~Funct3[2]& ~Funct3[1]&~Funct3[0]; // beq 000
+   wire i_bne  = sbtype & ~Funct3[2] & ~Funct3[1] & Funct3[0]; // bne 001
+   wire i_blt  = sbtype & Funct3[2] & ~Funct3[1] & ~Funct3[0]; // blt 100
+   wire i_bge  = sbtype & Funct3[2] & ~Funct3[1] &  Funct3[0]; // bge 101
+   wire i_bltu = sbtype & Funct3[2] & Funct3[1] & ~Funct3[0];  // bltu 110
+   wire i_bgeu = sbtype & Funct3[2] & Funct3[1] & Funct3[0];   // bgeu 111      
 	
  // j format
    wire i_jal  = Op[6]& Op[5]&~Op[4]& Op[3]& Op[2]& Op[1]& Op[0];  // jal 1101111
@@ -83,8 +88,7 @@ module ctrl(Op, Funct7, Funct3,
   // EXT_CTRL_UTYPE	      6'b000010
   // EXT_CTRL_JTYPE	      6'b000001
   assign EXTOp[5] = 0;
-  //assign EXTOp[4]    =  i_ori | i_andi | i_jalr;
-  assign EXTOp[4]    =  i_ori | i_addi;  
+  assign EXTOp[4]    =  i_ori | i_addi | i_jalr;  
   assign EXTOp[3]    = stype; 
   assign EXTOp[2]    = sbtype; 
   assign EXTOp[1]    = lui | auipc;   
@@ -107,16 +111,32 @@ module ctrl(Op, Funct7, Funct3,
   // assign NPCOp[0] = sbtype & Zero;
   assign NPCOp[0] = sbtype;
   assign NPCOp[1] = i_jal;
-	assign NPCOp[2]=i_jalr;
+	assign NPCOp[2] = i_jalr;
   
 
+// `define ALUOp_nop 5'b00000
+// `define ALUOp_lui 5'b00001
+// `define ALUOp_auipc 5'b00010
+// `define ALUOp_add 5'b00011
+// `define ALUOp_sub 5'b00100
+// `define ALUOp_bne 5'b00101
+// `define ALUOp_blt 5'b00110
+// `define ALUOp_bge 5'b00111
+// `define ALUOp_bltu 5'b01000
+// `define ALUOp_bgeu 5'b01001
+// `define ALUOp_slt 5'b01010
+// `define ALUOp_sltu 5'b01011
+// `define ALUOp_xor 5'b01100
+// `define ALUOp_or 5'b01101
+// `define ALUOp_and 5'b01110
+// `define ALUOp_sll 5'b01111
+// `define ALUOp_srl 5'b10000
+// `define ALUOp_sra 5'b10001
  
-	assign ALUOp[0] = itype_l|stype|i_addi|i_ori|i_add|i_or | lui;
-	assign ALUOp[1] = i_jalr|itype_l|stype|i_addi|i_add|i_and | auipc;
-	//assign ALUOp[2] = i_andi|i_and|i_ori|i_or|i_beq|i_sub;
-	//assign ALUOp[3] = i_andi|i_and|i_ori|i_or;
-	assign ALUOp[2] = i_and|i_ori|i_or|i_beq|i_sub;
-  assign ALUOp[3] = i_and|i_ori|i_or;    
+	assign ALUOp[0] = itype_l|stype|i_addi|i_ori|i_add|i_or | lui | i_jalr | i_bne|i_bge;
+	assign ALUOp[1] = i_jalr| i_jal |itype_l|stype|i_addi|i_add|i_and | auipc | i_blt|i_bge;
+	assign ALUOp[2] = i_and|i_ori|i_or|i_beq|i_sub |i_bne|i_blt|i_bge;
+  assign ALUOp[3] = i_and|i_ori|i_or|i_bltu;    
 	assign ALUOp[4] = 0;
 
 endmodule
