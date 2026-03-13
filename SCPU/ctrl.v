@@ -112,7 +112,15 @@ module ctrl(Op, Funct7, Funct3,
   assign NPCOp[0] = sbtype;
   assign NPCOp[1] = i_jal;
 	assign NPCOp[2] = i_jalr;
-  
+
+// dm_word 3'b000
+// dm_halfword 3'b001
+// dm_halfword_unsigned 3'b010
+// dm_byte 3'b011
+// dm_byte_unsigned 3'b100
+  assign DMType[0] = 0;
+  assign DMType[1] = 0;
+  assign DMType[2] = 0;
 
 // `define ALUOp_nop 5'b00000
 // `define ALUOp_lui 5'b00001

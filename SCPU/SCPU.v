@@ -12,13 +12,18 @@ module SCPU #(
 	output [31:0]	Addr_out,
 	output [31:0]	Data_out,
 	input [4:0] 	reg_sel,
-	output [31:0] 	reg_data
+	output [31:0] 	reg_data,
+	output [2:0]	dm_dmtype
 );
 
 reg		pipe1_valid;
 reg		pipe2_valid;
 reg		pipe3_valid;
 reg     pipe4_valid;
+
+wire 	pipe2_allowin;
+wire 	pipe3_allowin;
+wire 	pipe4_allowin;
 
 
 // ------cpu相关变量------
@@ -75,7 +80,7 @@ wire [31:0] ex_AluResult;
 wire 		ex_Zero;
 wire [31:0]	ex_A;
 wire [31:0] ex_B;
-wire [31:0]	ex_alumux_res;
+wire [31:0]	ex_forwardingmux_res;
 
 wire [1:0]	ex_ForwardA;
 wire [1:0]	ex_ForwardB;
@@ -290,7 +295,7 @@ hazard_detection_unit U_Hdu(
 // ------- ID/EX阶段(pipe 2) -------
 // 数据： RD1,RD2,immout,pc
 // 控制信号： 
-wire 	pipe2_allowin;
+
 wire	pipe2_ready_go;
 wire	pipe2_to_pipe3_valid;
 
@@ -355,12 +360,22 @@ end
 
 //	------- EX阶段 -------
 
+//	3.ForwardB_mux
+forwardingmux U_Forwarding_B_MUX(
+	.A(id_ex_RD2),
+	.B(ex_mem_AluResult),
+	.C(wb_WD),
+	.sel(ex_ForwardB),
+	.muxres(ex_forwardingmux_res)
+);
+
+
 // 1.ALUSrc 确定了是RD2还是immout
 alumux U_ALUMUX(
-	.A(id_ex_RD2),
+	.A(ex_forwardingmux_res),
 	.B(id_ex_immout),
 	.ALUSrc(id_ex_ALUSrc),
-	.MuxResult(ex_alumux_res)
+	.MuxResult(ex_B)
 );
 
 //	2.ForwardA_mux
@@ -372,14 +387,7 @@ forwardingmux U_Forwarding_A_MUX(
 	.muxres(ex_A)
 );
 
-//	3.ForwardB_mux
-forwardingmux U_Forwarding_B_MUX(
-	.A(ex_alumux_res),
-	.B(ex_mem_AluResult),
-	.C(wb_WD),
-	.sel(ex_ForwardB),
-	.muxres(ex_B)
-);
+
 
 // 4.ALU
 alu U_ALU(
@@ -421,7 +429,7 @@ assign npc = pipe2_valid ? ex_npc : (if_pc + 32'd4);
 
 
 // ------ EX/MEM阶段(pipe 3) -------
-wire 	pipe3_allowin;
+
 wire	pipe3_ready_go;
 wire	pipe3_to_pipe4_valid;
 
@@ -456,7 +464,7 @@ always @(posedge clk ) begin
 		ex_mem_PC			<= id_ex_PC;
 		ex_mem_AluResult 	<= ex_AluResult;
 		ex_mem_MemWrite		<= id_ex_MemWrite;
-		ex_mem_WriteData	<= id_ex_RD2;
+		ex_mem_WriteData	<= ex_forwardingmux_res;
 		
 		ex_mem_RFWr			<= id_ex_RFWr;
 		ex_mem_WDSel		<= id_ex_WDSel;
@@ -481,14 +489,13 @@ end
 assign mem_w = ex_mem_MemWrite && pipe3_valid;
 assign Addr_out = ex_mem_AluResult;
 assign Data_out = ex_mem_WriteData;
-
-// 注意这个DM还没有实现单个字节读取，要用DMType！！！
+assign dm_dmtype = ex_mem_DMType;
 
 
 
 
 // ------ MEM/WB阶段(pipe 4) -------
-wire 	pipe4_allowin;
+
 wire	pipe4_ready_go;
 
 assign pipe4_ready_go = 1'b1; //此处恒设定为1，在具体实现中可根据条件修改

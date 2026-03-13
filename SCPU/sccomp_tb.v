@@ -54,6 +54,20 @@ module sccomp_tb();
           $fdisplay(foutput, "rf20-23:\t %h %h %h %h", U_SCCOMP.U_SCPU.U_RF.rf[20], U_SCCOMP.U_SCPU.U_RF.rf[21], U_SCCOMP.U_SCPU.U_RF.rf[22], U_SCCOMP.U_SCPU.U_RF.rf[23]);
           $fdisplay(foutput, "rf24-27:\t %h %h %h %h", U_SCCOMP.U_SCPU.U_RF.rf[24], U_SCCOMP.U_SCPU.U_RF.rf[25], U_SCCOMP.U_SCPU.U_RF.rf[26], U_SCCOMP.U_SCPU.U_RF.rf[27]);
           $fdisplay(foutput, "rf28-31:\t %h %h %h %h", U_SCCOMP.U_SCPU.U_RF.rf[28], U_SCCOMP.U_SCPU.U_RF.rf[29], U_SCCOMP.U_SCPU.U_RF.rf[30], U_SCCOMP.U_SCPU.U_RF.rf[31]);
+
+          // display DM content (byte addressing)
+          $fdisplay(foutput, "dmem:");
+          $fdisplay(foutput, "dm[%08h]:\t %02h %02h %02h %02h", 0,  U_SCCOMP.U_DM.dmem[0],  U_SCCOMP.U_DM.dmem[1],  U_SCCOMP.U_DM.dmem[2],  U_SCCOMP.U_DM.dmem[3]);
+          $fdisplay(foutput, "dm[%08h]:\t %02h %02h %02h %02h", 4,  U_SCCOMP.U_DM.dmem[4],  U_SCCOMP.U_DM.dmem[5],  U_SCCOMP.U_DM.dmem[6],  U_SCCOMP.U_DM.dmem[7]);
+          $fdisplay(foutput, "dm[%08h]:\t %02h %02h %02h %02h", 8,  U_SCCOMP.U_DM.dmem[8],  U_SCCOMP.U_DM.dmem[9],  U_SCCOMP.U_DM.dmem[10], U_SCCOMP.U_DM.dmem[11]);
+          $fdisplay(foutput, "dm[%08h]:\t %02h %02h %02h %02h", 12, U_SCCOMP.U_DM.dmem[12], U_SCCOMP.U_DM.dmem[13], U_SCCOMP.U_DM.dmem[14], U_SCCOMP.U_DM.dmem[15]);
+          $fdisplay(foutput, "dm[%08h]:\t %02h %02h %02h %02h", 16, U_SCCOMP.U_DM.dmem[16], U_SCCOMP.U_DM.dmem[17], U_SCCOMP.U_DM.dmem[18], U_SCCOMP.U_DM.dmem[19]);
+          $fdisplay(foutput, "dm[%08h]:\t %02h %02h %02h %02h", 20, U_SCCOMP.U_DM.dmem[20], U_SCCOMP.U_DM.dmem[21], U_SCCOMP.U_DM.dmem[22], U_SCCOMP.U_DM.dmem[23]);
+          $fdisplay(foutput, "dm[%08h]:\t %02h %02h %02h %02h", 24, U_SCCOMP.U_DM.dmem[24], U_SCCOMP.U_DM.dmem[25], U_SCCOMP.U_DM.dmem[26], U_SCCOMP.U_DM.dmem[27]);
+          $fdisplay(foutput, "dm[%08h]:\t %02h %02h %02h %02h", 28, U_SCCOMP.U_DM.dmem[28], U_SCCOMP.U_DM.dmem[29], U_SCCOMP.U_DM.dmem[30], U_SCCOMP.U_DM.dmem[31]);
+          $fdisplay(foutput, "dm[%08h]:\t %02h %02h %02h %02h", 32, U_SCCOMP.U_DM.dmem[32], U_SCCOMP.U_DM.dmem[33], U_SCCOMP.U_DM.dmem[34], U_SCCOMP.U_DM.dmem[35]);
+          $fdisplay(foutput, "----------------------------------------");
+        
           //$fdisplay(foutput, "hi lo:\t %h %h", U_SCCOMP.U_SCPU.U_RF.rf.hi, U_SCCOMP.U_SCPU.U_RF.rf.lo);
           // $fclose(foutput);
           // $stop;
