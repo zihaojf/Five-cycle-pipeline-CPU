@@ -57,7 +57,7 @@ or (ID/EX.RegisterRd = IF/ID.RegisterRs2))
 • I0={LUI, AUIPC}
 • I1={JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU}
 • I2={LB, LH, LW, LBU, LHU, SB, SH, SW}
-• I3={ADDI, SLTI, SLTIU, XORI, ORI, ANDI, ALLI, SRLI,
+• I3={ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SRLI,
 SRALI, SRAI}
 • I4={ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND}
 
@@ -101,6 +101,8 @@ written to register rd. Register x0 can be used as the destination if the result
 ### 5.3 LB, LH, LW, LBU, LHU, SB, SH, SW
 ![](./SCPU/images/load_store.png)
 
-
+### 5.4 ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SRLI, SRALI, SRAI
+![](./SCPU/images/iimmtype.png)
+![](./SCPU/images/iimmshamt.png)
 
 

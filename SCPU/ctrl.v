@@ -40,7 +40,16 @@ module ctrl(Op, Funct7, Funct3,
 // i format
     wire itype_r  = ~Op[6]&~Op[5]&Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0]; //0010011
     wire i_addi  =  itype_r& ~Funct3[2]& ~Funct3[1]& ~Funct3[0]; // addi 000
-    wire i_ori  =  itype_r& Funct3[2]& Funct3[1]&~Funct3[0]; // ori 110
+    wire i_slti = itype_r & ~Funct3[2] & Funct3[1] & ~Funct3[0]; // slti 010
+    wire i_sltiu = itype_r & ~Funct3[2] & Funct3[1] & Funct3[0]; // sltiu 011
+    wire i_xori = itype_r & Funct3[2] & ~Funct3[1] &~Funct3[0];  // xori 100
+    wire i_ori  =  itype_r& Funct3[2]& Funct3[1]&~Funct3[0];     // ori 110
+    wire i_andi = itype_r & Funct3[2] & Funct3[1] & Funct3[0];   // andi 111
+
+    wire i_slli = itype_r & ~Funct3[2] & ~Funct3[1] & Funct3[0]; // slli 001
+    wire i_srli = itype_r & Funct3[2] & ~Funct3[1] & Funct3[0] & ~Funct7[5];  // srli 101 0000000
+    wire i_srai = itype_r & Funct3[2] & ~Funct3[1] & Funct3[0] &  Funct7[5];  // srli 101 0100000
+
 	
  //jalr
 	wire i_jalr =Op[6]&Op[5]&~Op[4]&~Op[3]&Op[2]&Op[1]&Op[0];//jalr 1100111
@@ -96,8 +105,8 @@ module ctrl(Op, Funct7, Funct3,
   // EXT_CTRL_BTYPE	      6'b000100
   // EXT_CTRL_UTYPE	      6'b000010
   // EXT_CTRL_JTYPE	      6'b000001
-  assign EXTOp[5] = 0;
-  assign EXTOp[4]    =  i_ori | i_addi | i_jalr | itype_l;  
+  assign EXTOp[5]    = i_slli | i_srli | i_srai;
+  assign EXTOp[4]    = i_jalr | itype_l | i_addi|i_slti|i_sltiu|i_xori|i_ori|i_andi;  
   assign EXTOp[3]    = stype; 
   assign EXTOp[2]    = sbtype; 
   assign EXTOp[1]    = lui | auipc;   
@@ -150,10 +159,10 @@ module ctrl(Op, Funct7, Funct3,
 // `define ALUOp_srl 5'b10000
 // `define ALUOp_sra 5'b10001
  
-	assign ALUOp[0] = itype_l|stype|i_addi|i_ori|i_add|i_or | lui | i_jalr | i_bne|i_bge;
-	assign ALUOp[1] = i_jalr| i_jal |itype_l|stype|i_addi|i_add|i_and | auipc | i_blt|i_bge;
-	assign ALUOp[2] = i_and|i_ori|i_or|i_beq|i_sub |i_bne|i_blt|i_bge;
-  assign ALUOp[3] = i_and|i_ori|i_or|i_bltu;    
+	assign ALUOp[0] = itype_l|stype|i_addi|i_ori|i_add|i_or | lui | i_jalr | i_bne|i_bge|i_sltiu;
+	assign ALUOp[1] = i_jalr| i_jal |itype_l|stype|i_addi|i_add|i_and | auipc | i_blt|i_bge|i_slti|i_sltiu|i_andi;
+	assign ALUOp[2] = i_and|i_ori|i_or|i_beq|i_sub |i_bne|i_blt|i_bge|i_xori|i_andi;
+  assign ALUOp[3] = i_and|i_ori|i_or|i_bltu|i_slti|i_sltiu|i_xori|i_andi;    
 	assign ALUOp[4] = 0;
 
 endmodule
