@@ -31,6 +31,11 @@ module ctrl(Op, Funct7, Funct3,
 
  // i format
    wire itype_l  = ~Op[6]&~Op[5]&~Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0]; //0000011
+   wire i_lb  = itype_l & ~Funct3[2] & ~Funct3[1] & ~Funct3[0];  // lb 000
+   wire i_lh  = itype_l & ~Funct3[2] & ~Funct3[1] & Funct3[0];   // lh 001
+   wire i_lw  = itype_l & ~Funct3[2] & Funct3[1] & ~Funct3[0];   // lw 010
+   wire i_lbu = itype_l & Funct3[2] & ~Funct3[1] & ~Funct3[0];  // lbu 100
+   wire i_lhu = itype_l & Funct3[2] & ~Funct3[1] & Funct3[0];   // lhu 101
 
 // i format
     wire itype_r  = ~Op[6]&~Op[5]&Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0]; //0010011
@@ -43,6 +48,10 @@ module ctrl(Op, Funct7, Funct3,
   // s format
    wire stype  = ~Op[6]&Op[5]&~Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0];//0100011
    wire i_sw   =  stype& ~Funct3[2]& Funct3[1]&~Funct3[0]; // sw 010
+   wire i_sb   =  stype & ~Funct3[2] & ~Funct3[1] & ~Funct3[0]; // sb 000
+   wire i_sh   =  stype & ~Funct3[2] & ~Funct3[1] & Funct3[0];  // sh 001
+   
+
 
   // sb format
    wire sbtype  = Op[6]&Op[5]&~Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0];//1100011
@@ -77,7 +86,7 @@ module ctrl(Op, Funct7, Funct3,
   // 产生控制信号
   assign RegWrite   = rtype | itype_r | i_jalr | i_jal | itype_l | lui | auipc; // register write
   assign MemWrite   = stype;                           // memory write
-  assign ALUSrc     = itype_r | stype | i_jal | i_jalr | lui | auipc;   // ALU B is from instruction immediate
+  assign ALUSrc     = itype_r | stype | i_jal | i_jalr | lui | auipc | itype_l;   // ALU B is from instruction immediate
   assign MemRead    = itype_l; // load型指令读取dm
 
   // signed extension
@@ -88,7 +97,7 @@ module ctrl(Op, Funct7, Funct3,
   // EXT_CTRL_UTYPE	      6'b000010
   // EXT_CTRL_JTYPE	      6'b000001
   assign EXTOp[5] = 0;
-  assign EXTOp[4]    =  i_ori | i_addi | i_jalr;  
+  assign EXTOp[4]    =  i_ori | i_addi | i_jalr | itype_l;  
   assign EXTOp[3]    = stype; 
   assign EXTOp[2]    = sbtype; 
   assign EXTOp[1]    = lui | auipc;   
@@ -118,9 +127,9 @@ module ctrl(Op, Funct7, Funct3,
 // dm_halfword_unsigned 3'b010
 // dm_byte 3'b011
 // dm_byte_unsigned 3'b100
-  assign DMType[0] = 0;
-  assign DMType[1] = 0;
-  assign DMType[2] = 0;
+  assign DMType[0] = i_sb | i_sh | i_lb |i_lh;
+  assign DMType[1] = i_sb | i_lb | i_lhu;
+  assign DMType[2] = i_lbu;
 
 // `define ALUOp_nop 5'b00000
 // `define ALUOp_lui 5'b00001

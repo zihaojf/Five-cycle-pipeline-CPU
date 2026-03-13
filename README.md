@@ -98,6 +98,8 @@ written to register rd. Register x0 can be used as the destination if the result
 #### 5.2.3 BEQ, BNE, BLT, BGE, BLTU, BGEU
 ![](./SCPU/images/branch.png)
 
+### 5.3 LB, LH, LW, LBU, LHU, SB, SH, SW
+![](./SCPU/images/load_store.png)
 
 
 
