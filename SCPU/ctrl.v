@@ -27,7 +27,12 @@ module ctrl(Op, Funct7, Funct3,
     wire i_sub  = rtype& ~Funct7[6]& Funct7[5]&~Funct7[4]&~Funct7[3]&~Funct7[2]&~Funct7[1]&~Funct7[0]&~Funct3[2]&~Funct3[1]&~Funct3[0]; // sub 0100000 000
     wire i_or   = rtype& ~Funct7[6]&~Funct7[5]&~Funct7[4]&~Funct7[3]&~Funct7[2]&~Funct7[1]&~Funct7[0]& Funct3[2]& Funct3[1]&~Funct3[0]; // or 0000000 110
     wire i_and  = rtype& ~Funct7[6]&~Funct7[5]&~Funct7[4]&~Funct7[3]&~Funct7[2]&~Funct7[1]&~Funct7[0]& Funct3[2]& Funct3[1]& Funct3[0]; // and 0000000 111
- 
+    wire i_sll  = rtype& ~Funct7[6]&~Funct7[5]&~Funct7[4]&~Funct7[3]&~Funct7[2]&~Funct7[1]&~Funct7[0]& ~Funct3[2] & ~Funct3[1] & Funct3[0]; // sll 0000000 001
+    wire i_slt  = rtype& ~Funct7[6]&~Funct7[5]&~Funct7[4]&~Funct7[3]&~Funct7[2]&~Funct7[1]&~Funct7[0]& ~Funct3[2] & Funct3[1] & ~Funct3[0]; // slt 0000000 010
+    wire i_sltu = rtype& ~Funct7[6]&~Funct7[5]&~Funct7[4]&~Funct7[3]&~Funct7[2]&~Funct7[1]&~Funct7[0]& ~Funct3[2] & Funct3[1] & Funct3[0];  // sltu 0000000 011
+    wire i_xor  = rtype& ~Funct7[6]&~Funct7[5]&~Funct7[4]&~Funct7[3]&~Funct7[2]&~Funct7[1]&~Funct7[0]& Funct3[2] & ~Funct3[1] & ~Funct3[0]; // xor 0000000 100
+    wire i_srl  = rtype& ~Funct7[6]&~Funct7[5]&~Funct7[4]&~Funct7[3]&~Funct7[2]&~Funct7[1]&~Funct7[0]& Funct3[2] & ~Funct3[1] & Funct3[0];  // srl 0000000 101
+    wire i_sra  = rtype& ~Funct7[6]& Funct7[5]&~Funct7[4]&~Funct7[3]&~Funct7[2]&~Funct7[1]&~Funct7[0]& Funct3[2] & ~Funct3[1] & Funct3[0];  // sra 0100000 101
 
  // i format
    wire itype_l  = ~Op[6]&~Op[5]&~Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0]; //0000011
@@ -46,13 +51,13 @@ module ctrl(Op, Funct7, Funct3,
     wire i_ori  =  itype_r& Funct3[2]& Funct3[1]&~Funct3[0];     // ori 110
     wire i_andi = itype_r & Funct3[2] & Funct3[1] & Funct3[0];   // andi 111
 
-    wire i_slli = itype_r & ~Funct3[2] & ~Funct3[1] & Funct3[0]; // slli 001
-    wire i_srli = itype_r & Funct3[2] & ~Funct3[1] & Funct3[0] & ~Funct7[5];  // srli 101 0000000
-    wire i_srai = itype_r & Funct3[2] & ~Funct3[1] & Funct3[0] &  Funct7[5];  // srli 101 0100000
+    wire i_slli = itype_r & ~Funct7[6] & ~Funct7[5] & ~Funct7[4] & ~Funct7[3] & ~Funct7[2] &~Funct7[1] & ~Funct7[0] &  ~Funct3[2] & ~Funct3[1] & Funct3[0]; // slli 0000000 001
+    wire i_srli = itype_r & ~Funct7[6] & ~Funct7[5] & ~Funct7[4] & ~Funct7[3] & ~Funct7[2] &~Funct7[1] & ~Funct7[0] & Funct3[2] & ~Funct3[1] & Funct3[0] ;  // srli  0000000 101
+    wire i_srai = itype_r & ~Funct7[6] & Funct7[5] & ~Funct7[4] & ~Funct7[3] & ~Funct7[2] &~Funct7[1] & ~Funct7[0] & Funct3[2] & ~Funct3[1] & Funct3[0] &  Funct7[5];  // srli  0100000 101
 
 	
- //jalr
-	wire i_jalr =Op[6]&Op[5]&~Op[4]&~Op[3]&Op[2]&Op[1]&Op[0];//jalr 1100111
+   //jalr
+	 wire i_jalr =Op[6]&Op[5]&~Op[4]&~Op[3]&Op[2]&Op[1]&Op[0] & ~Funct3[2] & ~Funct3[1] & ~Funct3[0];//jalr 1100111
 
   // s format
    wire stype  = ~Op[6]&Op[5]&~Op[4]&~Op[3]&~Op[2]&Op[1]&Op[0];//0100011
@@ -79,15 +84,6 @@ module ctrl(Op, Funct7, Funct3,
 
   // auipc 0010111
   wire auipc = ~Op[6] & ~Op[5] & Op[4] & ~Op[3] & Op[2] & Op[1] & Op[0];
-
-
-
-
-
-
-
-
-
 
 
 
@@ -159,10 +155,10 @@ module ctrl(Op, Funct7, Funct3,
 // `define ALUOp_srl 5'b10000
 // `define ALUOp_sra 5'b10001
  
-	assign ALUOp[0] = itype_l|stype|i_addi|i_ori|i_add|i_or | lui | i_jalr | i_bne|i_bge|i_sltiu;
-	assign ALUOp[1] = i_jalr| i_jal |itype_l|stype|i_addi|i_add|i_and | auipc | i_blt|i_bge|i_slti|i_sltiu|i_andi;
-	assign ALUOp[2] = i_and|i_ori|i_or|i_beq|i_sub |i_bne|i_blt|i_bge|i_xori|i_andi;
-  assign ALUOp[3] = i_and|i_ori|i_or|i_bltu|i_slti|i_sltiu|i_xori|i_andi;    
-	assign ALUOp[4] = 0;
+	assign ALUOp[0] = itype_l|stype|i_addi|i_ori|i_add|i_or | lui | i_jalr | i_bne|i_bge|i_sltiu|i_slli|i_sll|i_srai|i_sltu|i_sra|i_bgeu;
+	assign ALUOp[1] = i_jalr| i_jal |itype_l|stype|i_addi|i_add|i_and | auipc | i_blt|i_bge|i_slti|i_sltiu|i_andi|i_slli|i_sll|i_slt|i_sltu;
+	assign ALUOp[2] = i_and|i_ori|i_or|i_beq|i_sub |i_bne|i_blt|i_bge|i_xori|i_andi|i_slli|i_sll|i_xor;
+  assign ALUOp[3] = i_and|i_ori|i_or|i_bltu|i_slti|i_sltiu|i_xori|i_andi|i_slli|i_sll|i_slt|i_sltu|i_xor|i_bgeu;    
+	assign ALUOp[4] = i_srli | i_srai|i_srl|i_sra;
 
 endmodule

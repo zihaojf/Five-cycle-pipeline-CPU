@@ -105,4 +105,5 @@ written to register rd. Register x0 can be used as the destination if the result
 ![](./SCPU/images/iimmtype.png)
 ![](./SCPU/images/iimmshamt.png)
 
-
+### 5.5 ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND
+![](./SCPU/images/rtype.png)

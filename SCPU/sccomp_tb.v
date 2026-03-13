@@ -42,7 +42,7 @@ module sccomp_tb();
         $stop;
       end
       else begin
-        if (U_SCCOMP.PC <= 32'h00000048) begin
+        if (U_SCCOMP.PC <= 32'h00000300) begin
           counter = counter + 1;
           $fdisplay(foutput, "pc:\t %h", U_SCCOMP.PC);
           $fdisplay(foutput, "instr:\t\t %h", U_SCCOMP.instr);

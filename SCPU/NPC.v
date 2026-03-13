@@ -9,19 +9,31 @@ module NPC(PC, NPCOp, IMM, NPC, aluout, Zero, if_PC, branch);  // next pc module
 	input [31:0] aluout;
    input         Zero;
    output reg [31:0] NPC;   // next pc
-   output         branch;
+   output reg     branch;
    
    wire [31:0] PCPLUS4;
    
    assign PCPLUS4 = if_PC + 32'd4; // pc + 4
-   assign branch = (NPC != PCPLUS4);
 
    always @(*) begin
+      branch = 1'b0;
       case (NPCOp)
-          `NPC_PLUS4:  NPC = PCPLUS4;
-          `NPC_BRANCH: NPC = Zero ? PC+IMM : PCPLUS4;
-          `NPC_JUMP:   NPC = PC+IMM;
-		    `NPC_JALR:	  NPC = aluout;
+          `NPC_PLUS4:  begin 
+            NPC = PCPLUS4;
+          end
+          `NPC_BRANCH: begin
+            NPC = Zero ? PC+IMM : PCPLUS4;
+            branch = Zero;
+          end
+
+          `NPC_JUMP:   begin
+            NPC = PC+IMM;
+            branch = 1'b1;
+          end
+		    `NPC_JALR:	  begin
+            NPC = aluout;
+            branch = 1'b1;
+          end
           default:     NPC = PCPLUS4;
       endcase
    end // end always
