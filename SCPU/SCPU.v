@@ -401,11 +401,13 @@ alu U_ALU(
 
 //	5.Forwarding Unit
 forwarding U_Forwarding(
+	.ex_mem_valid(pipe3_valid),
 	.ex_mem_RFWr(ex_mem_RFWr),
 	.ex_mem_rd(ex_mem_rd),
 	.id_ex_rs1(id_ex_rs1),
 	.id_ex_rs2(id_ex_rs2),
 	
+	.mem_wb_valid(pipe4_valid),
 	.mem_wb_RFWr(mem_wb_RFWr),
 	.mem_wb_rd(mem_wb_rd),
 	.ex_ForwardA(ex_ForwardA),
