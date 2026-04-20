@@ -1,4 +1,61 @@
+
+
+MMIO地址映射：
+
+- `0x0100_0000` `MEM`（数据存储器）
+- `0x0200_0000` `KBD`（PS2键盘扫描码）
+- `0x0300_0000` `VMEM`（字符显存）
+- `0x0400_0000` `HEX`（数码管）
+- `0x0500_0000` `LEDR`（LED寄存器）
+- `0x0600_0000` `SW`（拨码开关）
+- `0x0700_0000` `KEY`（按键，当前返回0）
+- `0x0800_0000` `CLK`（`+0/+4/+8/+c` 分别为 us/ms/ds/s）
+- `0x0900_0000` `VGA_CTRL`（0: 字符模式, 1: 图形模式）
+- `0x0a00_0000` `FB`（图形帧缓冲）
+
+## 运行方式
+
+1. 首先将repo中的am_home设置为$MYCPU_AM_HOME环境变量
+2. 安装相关工具
+   - riscv工具链(与projectN-ICS-PA相同)
+   - verilator (version >= v4.204
+
+3. 一键构建并更新上板镜像（在仓库根目录执行）：
+
+```
+ # typing-game
+ ./abstract-machine/scripts/build_fpga_app.sh 
+ ./am_kernel/typing-game
+ 
+ # myterm
+ ./abstract-machine/scripts/build_fpga_app.sh 
+ ./am_kernel/myterm
+ 
+ # oslab0 某个游戏（示例：tanchishe）
+ ./abstract-machine/scripts/build_fpga_app.sh 
+ ./am_kernel/oslab0 GAME=tanchishe
+```
+
+执行后会自动更新：
+
+- `fpga/Test_8_Instr.dat`（指令镜像）
+- `fpga/prog1_word.hex`（数据镜像）
+
+4. vivado
+
+```
+reset_run synth_1
+reset_run impl_1
+launch_runs synth_1 -jobs 8
+wait_on_run synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 8
+wait_on_run impl_1
+```
+
+
+
 ## 1.五阶段流水线框架搭建
+
 allowin 表示本级流水线是否允许有数据输入;
 ready_go 表示本级流水线的当前数据是否准备好了传递给下一级;
 pipex_to_pipex_valid 表示流水线传递的数据是否合法

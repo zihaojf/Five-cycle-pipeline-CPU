@@ -2,3 +2,5 @@ SCPU/sim.out
 SCPU/wave.vcd
 SCPU/results.txt
 SCPU/test.dat
+fpga/wave.vcd
+fpga/results.txt

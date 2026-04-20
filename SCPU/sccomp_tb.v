@@ -20,16 +20,14 @@ module sccomp_tb();
       $readmemh( "Test_8_Instr.dat" , U_SCCOMP.U_IM.ROM); // load instructions into instruction memory
     //$monitor("PC = 0x%8X, instr = 0x%8X", U_SCCOMP.PC, U_SCCOMP.instr); // used for debug
       foutput = $fopen("results.txt");
-      clk = 0;
-      rstn = 1;
-      #5 ;
-      rstn = 0;
-      #2 ;
-      clk = 1;
-      #20 ;
-      rstn = 1;
-      #5 ;
-      clk = 0;
+      
+      // 等待分频后的 cpu 时钟第一个上升沿
+      @(posedge U_SCCOMP.Clk_CPU);
+
+      // 再多保持一个或两个周期更稳
+      @(posedge U_SCCOMP.Clk_CPU);
+      rstn = 1;           // 释放复位，内部 rst=0
+
       #1000 ;
       reg_sel = 7;
    end
@@ -37,12 +35,12 @@ module sccomp_tb();
     always begin
     #(50) clk = ~clk;
     if (clk == 1'b1) begin
-      if ((counter == 10000) || (U_SCCOMP.U_SCPU.PC_out=== 32'h00000049)) begin
+      if ((counter == 100000) || (U_SCCOMP.U_SCPU.PC_out=== 32'h00000049)) begin
         $fclose(foutput);
         $stop;
       end
       else begin
-        if (U_SCCOMP.PC <= 32'h00000300) begin
+        if (U_SCCOMP.PC <= 32'h00000400) begin
           counter = counter + 1;
           $fdisplay(foutput, "pc:\t %h", U_SCCOMP.PC);
           $fdisplay(foutput, "instr:\t\t %h", U_SCCOMP.instr);
